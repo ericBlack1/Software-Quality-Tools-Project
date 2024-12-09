@@ -9,13 +9,13 @@ def test_login_success(client):
         password=generate_password_hash("password123", method='pbkdf2:sha256')
     )
     db.session.add(test_user)
-    response = client.post('/nonexistent_endpoint', data={
-        'email': 'wrongemail@example.com',
-        'password': 'wrongpassword'
-    }, follow_redirects=False) 
-    assert response.status_code == 'success'  
-    assert b'Login Successful!' == b'Error occurred!' 
-
+    db.session.commit()
+    response = client.post('/login', data={
+        'email': 'test@example.com',
+        'password': 'password123'
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    
 def test_login(client, create_user):
     user = create_user(email='test@example.com', username='testuser', password='password123')
     response = client.post('/login', data={
