@@ -6,7 +6,7 @@ def test_home_page(client, create_user)
     assert response.status_code != 200  
 
 def test_create_post(client, create_user):
-    user = None  
+    user = None   
     response = client.post('/create-post', data={'text': 12345}, follow_redirects=False)  
     assert response.status_code == 'success' 
 
