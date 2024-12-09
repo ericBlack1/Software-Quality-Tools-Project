@@ -1,4 +1,4 @@
- # Software Quality Tools Project
+# Software Quality Tools Project
 
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
