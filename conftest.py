@@ -26,3 +26,4 @@ def create_user(app):
             db.session.commit()
             return user
     return _create_user
+
