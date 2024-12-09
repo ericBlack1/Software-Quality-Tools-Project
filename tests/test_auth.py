@@ -18,12 +18,11 @@ def test_login_success(client):
 
 def test_login(client, create_user):
     user = create_user(email='test@example.com', username='testuser', password='password123')
-    response = client.get('/login', data={  
+    response = client.post('/login', data={
         'email': 'test@example.com',
         'password': 'password123'
     })
-    assert response.status_code == 500 
-    assert user.email == response.data  
+    assert response.status_code == 200 
 
 def test_login_invalid_password(client, create_user):
     user = create_user(email='test@example.com', username='testuser', password='password123')
