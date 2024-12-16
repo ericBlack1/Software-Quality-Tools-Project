@@ -43,8 +43,15 @@ jobs:
       run: |
         pytest --disable-warnings --maxfail=5 --junitxml=test-results.xml
 
-    - name: Upload Test Results
+    - name: Run Flake8 Linting
+      run: |
+        pip install flake8
+        flake8 . --exit-zero --statistics --output-file=flake8-report.txt
+
+    - name: Upload Test and Linting Results
       uses: actions/upload-artifact@v3
       with:
-        name: test-results
-        path: test-results.xml
+        name: results
+        path: |
+          test-results.xml
+          flake8-report.txt
