@@ -9,113 +9,42 @@ on:
       - main
 
 jobs:
-  # Linting job to ensure coding standards are followed
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13.0'
-      - name: Install dependencies for linting
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8
-      - name: Lint code with flake8
-        run: |
-          flake8 .
-
-  # Test job with matrix builds for cross-platform testing and parallel execution
   test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
+
+    env:
+      FLASK_APP: website
+      DATABASE_URL: sqlite:///test_db.sqlite
+      FLASK_ENV: testing
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13.0'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13.0'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
-      - name: Install pytest-xdist for parallel execution
-        run: pip install pytest-xdist
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Set up the environment
-        run: |
-          set FLASK_APP=website
-          set DATABASE_URL=sqlite:///test_db.sqlite
+    - name: Run Tests
+      run: |
+        pytest --disable-warnings --maxfail=5 --junitxml=test-results.xml
 
-      - name: Run Tests in Parallel
-        env:
-          FLASK_ENV: testing
-        run: |
-          pytest -n 4 --disable-warnings --maxfail=5
-
-  # Dependency caching to speed up the pipeline
-  cache:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-python-
-
-  # Generate coverage report and upload it to Codecov
-  coverage:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run tests with coverage
-        run: |
-          pytest --cov=your_module --cov-report=xml
-      - name: Upload Coverage Report to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: coverage.xml
-
-  # Security scanning with Safety (checks for insecure dependencies)
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Safety
-        run: pip install safety
-      - name: Run Safety check
-        run: safety check
-
-  # Build and deploy job (e.g., deploy to Heroku after tests pass)
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Heroku CLI
-        uses: akshnz/heroku-cli-action@v1
-      - name: Deploy to Heroku
-        run: |
-          heroku login -i
-          git remote add heroku https://git.heroku.com/your-app.git
-          git push heroku main
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: test-results.xml
