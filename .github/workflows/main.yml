@@ -1,4 +1,4 @@
-name: Python CI Pipeline
+name: Python CI Pipelines
 
 on:
   push:
