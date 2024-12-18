@@ -3,7 +3,7 @@ pipeline {
     agent any
     
     environment {
-        PYTHON_VERSION = '3.12.5'
+        PYTHON_VERSION = '3.13.0'
     }
     
     stages {
@@ -13,7 +13,7 @@ pipeline {
                     $class: 'GitSCM', 
                     branches: [[name: '*/main']], 
                     extensions: [[$class: 'CleanCheckout']], 
-                    userRemoteConfigs: [[credentialsId: 'ange', url: 'https://github.com/At-an/Software-Quality-Tools-Project.git']]
+                    userRemoteConfigs: [[credentialsId: '80e791a9-4e0c-4910-ba40-01c280f2be70', url: 'https://github.com/GinaBlack/Software-Quality-Tools-Project.git']]
                 ])
             }
         }
