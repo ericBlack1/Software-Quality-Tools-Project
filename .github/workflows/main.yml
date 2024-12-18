@@ -1,4 +1,4 @@
-name: Python CI Pipeline
+name: Python CI Pipelines
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    - cron: '0 2 * * 1'  # Run at 2:00 AM every Monday
 
 jobs:
   test:
@@ -43,8 +45,15 @@ jobs:
       run: |
         pytest --disable-warnings --maxfail=5 --junitxml=test-results.xml
 
-    - name: Upload Test Results
+    - name: Lint with Flake8
+      run: |
+        pip install flake8 flake8-trailing-whitespace
+        flake8 . --output-file=flake8-report.txt --statistics --max-line-length=79
+
+    - name: Upload Test and Linting Results
       uses: actions/upload-artifact@v3
       with:
-        name: test-results
-        path: test-results.xml
+        name: results
+        path: |
+          test-results.xml
+          flake8-report.txt
